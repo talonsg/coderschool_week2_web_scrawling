@@ -1,1 +1,1 @@
-python web_scrawling.py web_scrawl https://tiki.vn/do-ngu-be-trai/c5284/unifriend
+python web_scrawling.py web_scrawl "https://tiki.vn/do-ngu-be-trai/c5284/unifriend"
