@@ -1,1 +1,0 @@
-# coderschool_week1_web_scrawling
