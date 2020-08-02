@@ -9,7 +9,7 @@ The product data is exported as csv file with the following information:
     'image_url'
     'sale_percentage'
 
-The code auto-assume the product page start at the first page, so the ending of url input must be strictly as following:
+The code assumes the product page start at the first page, so the ending of url input must be strictly as following:
 1. "https://tiki.vn/laptop-may-vi-tinh-linh-kien/c1846?src=c.1846.hamburger_menu_fly_out_banner"
 2. "https://tiki.vn/laptop-may-vi-tinh-linh-kien/c1846?src=c.1846.hamburger_menu_fly_out_banner&page=1"
 
