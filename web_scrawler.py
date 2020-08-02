@@ -30,59 +30,87 @@ parser.add_argument('-u',
                     dest = 'url',
                     required = True,
                     help = 'Input url for web scrawler')
+
+parser.add_argument('-n',
+                    dest = 'no_page',
+                    default = 1,
+                    required = False,
+                    type = int,
+                    help = 'Number of pages to roll over')
 options = parser.parse_args()
 
 #define functions here:
 
 def web_scrawler(   file_name = options.output_file_name,
                     file_location = options.file_location,
-                    url = options.url):
+                    url = options.url,
+                    no_page = options.no_page):
 
-    try:
-        page = requests.get(url)
-    except:
-        print("Error reading url")
-            
-    #parse the html
-    soup = BeautifulSoup(page.text, 'html.parser')
+    '''
 
-    #Loop through all products
-    product_data = []
-    products = soup.find_all('div', {'class':'product-item'})
+    The web_scraweler() function takes a url from tiki.vn that contains a list of product,
+    It takes the product information and rolls over the specified number of pages.
+    The product data is exported as csv file.
 
-    for product in products:
-        #make a dictionary containing neccesary information
-        d = {
-            'seller_id':'',
-            'product_brand':'',
-            'product_id':'',
-            'product_title':'',
-            'price_included_sale':'',
-            'image_url':'',
-            'sale_percentage':''
-        }
+    '''
+    
+    #for rolling over pages, check if end of url contains "&page=1"
+    page_roller = '&page=1'
+    if page_roller not in url:
+        url = url + page_roller
+    
+    for i in range (1, no_page+1):
+        url = list(url)
+        url[-1] = str(i)
+        url = ''.join(url)
 
-        #try-except block to handle errors
+        print(f'Scraping page {url}')
 
         try:
-            d['seller_id'] = product['data-seller-product-id']
-            d['product_brand'] = product['data-brand']
-            d['product_id'] = product['product-sku']
-            d['product_title'] = product['data-title']
-            d['price_included_sale'] = product['data-price'] 
-            d['image_url'] = product.find('span', {'class':'image'}).img['src']
-
-            #check if the price include sale or not
-            sale_tag = product.find('span', {'class':'sale-tag sale-tag-square'}).text
-            if sale_tag:
-                d['sale_percentage'] = sale_tag
-                    
-            #add to product_data array:
-            product_data.append(d)
-
+            page = requests.get(url)
         except:
-            # Skip if error and print error message
-            print("Error reading product")
+            print("Error reading url")
+                
+        #parse the html
+        soup = BeautifulSoup(page.text, 'html.parser')
+
+        #Loop through all products
+        product_data = []
+        products = soup.find_all('div', {'class':'product-item'})
+
+        for product in products:
+            #make a dictionary containing neccesary information
+            d = {
+                'seller_id':'',
+                'product_brand':'',
+                'product_id':'',
+                'product_title':'',
+                'price_included_sale':'',
+                'image_url':'',
+                'sale_percentage':''
+            }
+
+            #try-except block to handle errors
+
+            try:
+                d['seller_id'] = product['data-seller-product-id']
+                d['product_brand'] = product['data-brand']
+                d['product_id'] = product['product-sku']
+                d['product_title'] = product['data-title']
+                d['price_included_sale'] = product['data-price'] 
+                d['image_url'] = product.find('span', {'class':'image'}).img['src']
+
+                #check if the price include sale or not
+                sale_tag = product.find('span', {'class':'sale-tag sale-tag-square'}).text
+                if sale_tag:
+                    d['sale_percentage'] = sale_tag
+                        
+                #add to product_data array:
+                product_data.append(d)
+
+            except:
+                # Skip if error and print error message
+                print("Error reading product")
 
 
     #save product data to dataframe
