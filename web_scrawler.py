@@ -1,11 +1,11 @@
 '''
 CoderSchool Week 1 Project
 
-Date: 31/7/2020
+Date: 02/08/2020
 Name: Lan Nguyen
 Email: chi.lan1601@gmail.com
 
-The function asks for an input of url from tiki.vn that contain a list of product and return a pandas dataframe.
+The function takes a url from tiki.vn that contains a list of product and returns a pandas dataframe.
 It exports a csv with the following information:
     'seller_id'
     'product_brand'
@@ -15,20 +15,52 @@ It exports a csv with the following information:
     'image_url'
     'sale_percentage'
 
-Example url: https://tiki.vn/do-ngu-be-trai/c5284/unifriend
+To run the code: 
+python  web_scrawler.py -loc "output file path" -o "output csv file" -u "url"
+
+Set by default:
+-loc = "./"
+-o = "results.csv"
+-u is required 
+
+Example:
+python web_scrawler.py web_scrawler -loc "./" -o "results.csv" -u "https://tiki.vn/do-ngu-be-trai/c5284/unifriend"
 
 '''
-
+import argparse
 import pandas as pd
 import requests
 from bs4 import BeautifulSoup
 
-def web_scrawler():
+#define arguments input to run on bash here
+parser = argparse.ArgumentParser()
 
-    #ask and read URL
-    url_str = input()
-    try: 
-        page = requests.get(url_str)
+parser.add_argument('-o', 
+                    dest = 'output_file_name',
+                    default = 'results.csv',
+                    required = False,
+                    help = 'Name of output csv file')
+
+parser.add_argument('-loc', 
+                    dest = 'file_location',
+                    default = "./",
+                    required = False,
+                    help = 'Output location of csv file')
+
+parser.add_argument('-u', 
+                    dest = 'url',
+                    required = True,
+                    help = 'Input url for web scrawler')
+options = parser.parse_args()
+
+#define functions here:
+
+def web_scrawler(   file_name = options.output_file_name,
+                    file_location = options.file_location,
+                    url = options.url):
+
+    try:
+        page = requests.get(url)
     except:
         print("Error reading url")
             
@@ -76,6 +108,11 @@ def web_scrawler():
 
     #save product data to dataframe
     product_data = pd.DataFrame(data = product_data, columns = product_data[0].keys())
-    product_data.to_csv("./product_results.csv", index=False)
+    file_path = file_location + file_name
+    print(f'Saving file to {file_path}...')
+    product_data.to_csv(file_path, index=False)
 
-web_scrawler()
+
+#main code run here
+if __name__ == '__main__':
+    web_scrawler()
