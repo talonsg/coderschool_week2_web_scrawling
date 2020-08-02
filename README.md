@@ -23,7 +23,7 @@ Set by default:
 -u is required 
 
 Example:
-python web_scrawler.py -loc "./" -o "results.csv" -n "5" -u "https://tiki.vn/laptop-may-vi-tinh-linh-kien/c1846?src=c.1846.hamburger_menu_fly_out_banner"
+python web_scrawler.py -loc "./" -o "results.csv" -n 5 -u "https://tiki.vn/laptop-may-vi-tinh-linh-kien/c1846?src=c.1846.hamburger_menu_fly_out_banner"
 
 
 
