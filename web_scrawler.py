@@ -218,7 +218,7 @@ def get_product(cat, no_page, save_db = False):
 
     return product_data
 
-def do_some_sql_query():
+def do_some_sql_query(path, save_csv = False):
     #make some sql query
     query = '''
             SELECT product_title, price, sale_percentage
@@ -227,9 +227,10 @@ def do_some_sql_query():
             ORDER BY sale_percentage DESC
             LIMIT 10;
             '''
-    c.execute(query)
-    print(c.fetchall())
-    
+    df = pd.read_sql_query(query, conn)
+    if save_csv:
+        df.to_csv(path)
+
 class Category:
 
     '''
@@ -304,17 +305,21 @@ def main():
     #get all the main categories off tiki
     main_categories = get_main_categories(save_db=True)
 
+    #get all the categories
+    #get_all_categories(main_categories)
+
     #choose a random sub-category to scrape
     get_sub_categories(main_categories[2], save_db = True)
-
     get_product(main_categories[2], no_page = 1 , save_db= True)
 
-    do_some_sql_query()
+    do_some_sql_query(save_csv=True, path = "./categories.csv")
 
     #drop table after reading data
     drop_categories_table()
     drop_tiki_table()
 
+    #close sql server
+    conn.close()
 
 if __name__ == "__main__":
     main()
