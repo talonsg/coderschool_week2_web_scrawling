@@ -218,7 +218,18 @@ def get_product(cat, no_page, save_db = False):
 
     return product_data
 
-
+def do_some_sql_query():
+    #make some sql query
+    query = '''
+            SELECT product_title, price, sale_percentage
+            FROM tiki
+            WHERE sale_percentage > 50
+            ORDER BY sale_percentage DESC
+            LIMIT 10;
+            '''
+    c.execute(query)
+    print(c.fetchall())
+    
 class Category:
 
     '''
@@ -298,17 +309,7 @@ def main():
 
     get_product(main_categories[2], no_page = 1 , save_db= True)
 
-    #make some sql query
-    query = '''
-            SELECT product_title, price, sale_percentage
-            FROM tiki
-            WHERE sale_percentage > 50
-            ORDER BY sale_percentage DESC
-            LIMIT 10;
-            '''
-    c.execute(query)
-    print(c.fetchall())
-
+    do_some_sql_query()
 
     #drop table after reading data
     drop_categories_table()

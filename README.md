@@ -1,30 +1,31 @@
-The web_scraweler() function takes a url from tiki.vn that contains pages of list of product,
-It takes the product information and rolls over the specified number of pages.
-The product data is exported as csv file with the following information:
-    'seller_id'
-    'product_brand'
-    'product_id'
-    'product_title'
-    'price_included_sale'
-    'image_url'
-    'sale_percentage'
+The code uses sql to make query about data from tiki
+In the main function, the code does the following orders:
+1. Create two sql tables:
+    - One to hold the list of categories of products from tiki
+    - One to hold the list of products after scraping
 
-The code assumes the product page start at the first page, so the ending of url input must be strictly as following:
-1. "https://tiki.vn/laptop-may-vi-tinh-linh-kien/c1846?src=c.1846.hamburger_menu_fly_out_banner"
-2. "https://tiki.vn/laptop-may-vi-tinh-linh-kien/c1846?src=c.1846.hamburger_menu_fly_out_banner&page=1"
+2. Get all the main categories
 
-To run the code: 
-python  web_scrawler.py -loc "output file path" -o "output csv file" -n "number of rolling pages" -u "url"
+3. Get the sub categories of a main category (This only gets the next-level subcatogories)
 
-Set by default:
--loc = "./"
--o = "results.csv"
--n = 1
--u is required 
+4. Get all products from a given category (The category id of the product is based on the given category)
 
-Example:
-python web_scrawler.py -loc "./" -o "results.csv" -n 5 -u "https://tiki.vn/laptop-may-vi-tinh-linh-kien/c1846?src=c.1846.hamburger_menu_fly_out_banner"
+5. Do some sql query based on the function do_some_sql_query()
 
+6. Drop all the existing tables
 
+The structures of the sql table:
+categories (id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name VARCHAR(255),
+            url TEXT, 
+            parent_id INTEGER)
 
-
+TIKI (  id INTEGER PRIMARY KEY AUTOINCREMENT,
+        Seller_ID integer, 
+        Product_Brand text, 
+        Product_ID integer,
+        Product_Title text,
+        Price integer,
+        Sale_Percentage text,
+        Price_Pre_Sale text,
+        Category_id text)
