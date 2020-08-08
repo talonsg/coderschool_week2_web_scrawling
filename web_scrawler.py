@@ -1,7 +1,7 @@
 '''
-CoderSchool Week 1 Project
+CoderSchool Week 1 & 2 Project
 
-Date: 02/08/2020
+Date: 08/08/2020
 Name: Lan Nguyen
 Email: chi.lan1601@gmail.com
 
@@ -9,8 +9,11 @@ Email: chi.lan1601@gmail.com
 import argparse
 import pandas as pd
 import requests
-from bs4 import BeautifulSoup
+import sqlite3
 
+from bs4 import BeautifulSoup
+from pandas import DataFrame
+'''
 #define arguments input to run on bash here
 parser = argparse.ArgumentParser()
 
@@ -45,7 +48,8 @@ def web_scrawler(   file_name = options.output_file_name,
                     file_location = options.file_location,
                     url = options.url,
                     no_page = options.no_page):
-
+'''
+def web_scrawler( file_name, file_location, url, no_page):
     '''
 
     The web_scraweler() function takes a url from tiki.vn that contains a list of product,
@@ -86,8 +90,9 @@ def web_scrawler(   file_name = options.output_file_name,
                 'product_id':'',
                 'product_title':'',
                 'price_included_sale':'',
-                'image_url':'',
-                'sale_percentage':''
+                #'image_url':'',
+                'sale_percentage':'',
+                'category':''
             }
 
             #try-except block to handle errors
@@ -98,7 +103,8 @@ def web_scrawler(   file_name = options.output_file_name,
                 d['product_id'] = product['product-sku']
                 d['product_title'] = product['data-title']
                 d['price_included_sale'] = product['data-price'] 
-                d['image_url'] = product.find('span', {'class':'image'}).img['src']
+                #d['image_url'] = product.find('span', {'class':'image'}).img['src']
+                d['category'] = soup.find('div',{'class':'product-box-list'})['data-impress-list-title'].split(' | ')[1]
 
                 #check if the price include sale or not
                 sale_tag = product.find('span', {'class':'sale-tag sale-tag-square'}).text
@@ -119,7 +125,52 @@ def web_scrawler(   file_name = options.output_file_name,
     print(f'Saving file to {file_path}...')
     product_data.to_csv(file_path, index=False)
 
-
+'''
 #main code run here
 if __name__ == '__main__':
     web_scrawler()
+'''
+
+web_scrawler(url = "https://tiki.vn/laptop-may-vi-tinh-linh-kien/c1846?src=c.1846.hamburger_menu_fly_out_banner",
+            file_name= "tiki_data.csv",
+            file_location= "./",
+            no_page= 1)
+
+
+#connect to sql server
+conn = sqlite3.connect('SQL_TIKI_DATA.db')  
+c = conn.cursor()
+
+# Create table - TIKI
+c.execute('''DROP TABLE TIKI
+            ''')
+
+c.execute('''CREATE TABLE TIKI
+             ([generated_id] INTEGER PRIMARY KEY,
+             [Seller_ID] integer, 
+             [Product_Brand] text, 
+             [Product_ID] integer,
+             [Product_Title] text,
+             [Price_Included_Sale] integer,
+             [Sale_Percentage] text,
+             [Category] text)
+             ''')
+            
+#import csv file
+data = pd.read_csv ("./tiki_data.csv")
+data.to_sql('TIKI', conn, if_exists='append', index = False)
+
+conn.commit()
+
+#=execute and display
+c.execute('''
+SELECT *
+FROM Tiki
+LIMIT 10
+          ''')
+
+print(c.fetchall())
+
+
+
+
