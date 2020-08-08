@@ -133,12 +133,8 @@ def get_sub_categories(parent_category, save_db=False):
 
             # replace more than 2 spaces with one space
             name = re.sub('\s{2,}', ' ', name)
-                        
-            #remove space syntax
-            name = re.sub(r'[\ufeff\n\r\t]', " ", name)
 
             sub_url = TIKI_URL + div.a['href']
-
             cat = Category(name, sub_url, parent_category.cat_id)
             if save_db:
                 cat.save_into_db()
@@ -218,18 +214,30 @@ def get_product(cat, no_page, save_db = False):
 
     return product_data
 
-def do_some_sql_query(path, save_csv = False):
+def import_csv_to_sql(path):
+
+    #import csv file
+    print(f'Importing csv file {path}...')
+    data = pd.read_csv(path)
+    df = pd.DataFrame(data, columns= ['id','name','url','parent_id'])
+
+    #read into sqlite table
+    df.to_sql(name="categories", con=conn, index=False, index_label="id")
+
+
+def do_some_sql_query(save_csv = False,path = None):
     #make some sql query
     query = '''
-            SELECT product_title, price, sale_percentage
-            FROM tiki
-            WHERE sale_percentage > 50
-            ORDER BY sale_percentage DESC
-            LIMIT 10;
+            SELECT m.id, m.name, m.url, m.parent_id
+            FROM categories AS m 
+            LEFT JOIN categories AS e ON e.parent_id = m.id 
+            WHERE e.name IS NULL;
             '''
     df = pd.read_sql_query(query, conn)
+    print(df)
+
     if save_csv:
-        df.to_csv(path)
+        df.to_csv(path, index=False)
 
 class Category:
 
@@ -298,23 +306,26 @@ def main():
     Main function to execute
     '''
 
-    #create new sql table
-    create_categories_table()
+    # 1.create new sql table
+
+    #create_categories_table() #only call this table if 
     create_tiki_table()
 
-    #get all the main categories off tiki
-    main_categories = get_main_categories(save_db=True)
+    # 2. get all the main categories off tiki
+    #main_categories = get_main_categories(save_db=True)
 
-    #get all the categories
+    # 3. get all the categories (saved in categories.csv file)
     #get_all_categories(main_categories)
 
-    #choose a random sub-category to scrape
-    get_sub_categories(main_categories[2], save_db = True)
-    get_product(main_categories[2], no_page = 1 , save_db= True)
+    # 4. choose a random sub-category to scrape
+    #get_sub_categories(main_categories[2], save_db = True)
+    #get_product(main_categories[2], no_page = 1 , save_db= True)
 
-    do_some_sql_query(save_csv=True, path = "./categories.csv")
+    drop_categories_table()
+    import_csv_to_sql(path = './categories.csv')
+    do_some_sql_query(save_csv=True, path = './lowest_rank_categories')
 
-    #drop table after reading data
+    # 6. drop table after reading data
     drop_categories_table()
     drop_tiki_table()
 
