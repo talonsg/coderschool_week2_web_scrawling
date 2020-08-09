@@ -224,6 +224,11 @@ def import_csv_to_sql(path):
     #read into sqlite table
     df.to_sql(name="categories", con=conn, index=False, index_label="id")
 
+def import_csv_into_class(path, cat_id):
+    data = pd.read_csv()
+    df = pd.DataFrame(data, columns= ['id','name','url','parent_id'])
+
+    print(df.loc[0].at['name'])
 
 def do_some_sql_query(save_csv = False,path = None):
     #make some sql query
@@ -314,19 +319,22 @@ def main():
     # 2. get all the main categories off tiki
     #main_categories = get_main_categories(save_db=True)
 
-    # 3. get all the categories (saved in categories.csv file)
+    # 3. get all the categories (saved in categories.csv)
     #get_all_categories(main_categories)
 
+    # 4. get the lowest ranking categories  (lowest_rank_categories.csv)
+    #import_csv_to_sql(path = './categories.csv')
+    #do_some_sql_query(save_csv= True, path = './lowest_rank_categories.csv')
+
     # 4. choose a random sub-category to scrape
-    #get_sub_categories(main_categories[2], save_db = True)
+    #import_csv_into_class(path = './lowest_rank_categories.csv', cat_id = 12)
     #get_product(main_categories[2], no_page = 1 , save_db= True)
 
-    drop_categories_table()
-    import_csv_to_sql(path = './categories.csv')
-    do_some_sql_query(save_csv=True, path = './lowest_rank_categories')
+    # 5. do some query
+    
 
     # 6. drop table after reading data
-    drop_categories_table()
+    #drop_categories_table()
     drop_tiki_table()
 
     #close sql server
