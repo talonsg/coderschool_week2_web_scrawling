@@ -6,7 +6,7 @@ In the main function, the code does the following orders:
     - One to hold the list of categories of products from tiki 
     - One to hold the list of products after scraping
 
-2. Get all the main categories and its sub categories (This step is already done and saved in categories.csv)
+2. Get all the MAIN categories and its sub categories (This step is already done and saved in categories.csv)
 
 3. Get the lowest rank subcategories (This step is already done and saved in categories.csv)
 
