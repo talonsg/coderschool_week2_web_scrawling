@@ -3,14 +3,14 @@
 The code uses sql to make query about data from tiki
 In the main function, the code does the following orders:
 1. Create two sql tables:
-    - One to hold the list of categories of products from tiki
+    - One to hold the list of categories of products from tiki 
     - One to hold the list of products after scraping
 
-2. Get all the main categories and its sub categories (This step is already done and saved in csv files)
+2. Get all the main categories and its sub categories (This step is already done and saved in categories.csv)
 
-3. Get the sub categories of a main category
+3. Get the lowest rank subcategories (This step is already done and saved in categories.csv)
 
-4. Get all products from a given category (The category id of the product is based on the given category)
+4. Get all products from a given lowest rank subcategory
 
 5. Do some sql query based on the function do_some_sql_query()
 
@@ -26,7 +26,7 @@ There are two existing csv file on categories of products of tiki.vn from scrapi
 
 This was acquired using the following query on the categories.csv
 
-query = '''
+query =     '''
             SELECT m.id, m.name, m.url, m.parent_id
             FROM categories AS m 
             LEFT JOIN categories AS e ON e.parent_id = m.id 
@@ -49,4 +49,4 @@ TIKI (  id INTEGER PRIMARY KEY AUTOINCREMENT,
         Price integer,
         Sale_Percentage text,
         Price_Pre_Sale text,
-        Category_id text)
+        Category_id integer)

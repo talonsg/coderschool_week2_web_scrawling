@@ -70,7 +70,7 @@ def create_tiki_table():
                     Price integer,
                     Sale_Percentage text,
                     Price_Pre_Sale text,
-                    Category_id text
+                    Category_id integer
                     )              
                     '''
     try:
@@ -202,7 +202,8 @@ def get_product(cat, no_page, save_db = False):
                 else:
                     sale_tag = None
                     price_tag = None
-                pro = Product(seller_id, product_brand, product_id, product_title, price, cat.cat_id, sale_tag, price_tag)
+                
+                pro = Product(seller_id, product_brand, product_id, product_title, price, int(cat.cat_id), sale_tag, price_tag)
                 
                 if save_db:
                     pro.save_into_db()
@@ -225,18 +226,21 @@ def import_csv_to_sql(path):
     df.to_sql(name="categories", con=conn, index=False, index_label="id")
 
 def import_csv_into_class(path, cat_id):
-    data = pd.read_csv()
+    data = pd.read_csv(path)
     df = pd.DataFrame(data, columns= ['id','name','url','parent_id'])
 
-    print(df.loc[0].at['name'])
+    idx = int(df[df['id'] == cat_id].index[0])
+    cat = Category(cat_id = df.loc[idx].at['id'], name = df.loc[idx].at['name'], url = df.loc[idx].at['url'], parent_id = df.loc[idx].at['parent_id'])
+    
+    return cat
 
 def do_some_sql_query(save_csv = False,path = None):
     #make some sql query
     query = '''
-            SELECT m.id, m.name, m.url, m.parent_id
-            FROM categories AS m 
-            LEFT JOIN categories AS e ON e.parent_id = m.id 
-            WHERE e.name IS NULL;
+            SELECT t.product_title, t.price, t.sale_percentage, t.Category_id, c.name
+            FROM TIKI as t
+            LEFT JOIN categories as c ON t.Category_id = c.id
+            ORDER BY SALE_PERCENTAGE DESC
             '''
     df = pd.read_sql_query(query, conn)
     print(df)
@@ -289,7 +293,7 @@ class Product:
         self.category_id = category_id
 
     def __repr__(self):
-        return f"ID: {self.product_id}, Name: {self.product_title}"
+        return f"ID: {self.product_id}, Name: {self.product_title}, Cat ID: {self.cat_id}"
 
     def save_into_db(self):
         
@@ -312,29 +316,26 @@ def main():
     '''
 
     # 1.create new sql table
-
     #create_categories_table() #only call this table if 
     create_tiki_table()
 
-    # 2. get all the main categories off tiki
+    # 2. get all the main and subcategories categories off tiki (saved in categories.csv)
     #main_categories = get_main_categories(save_db=True)
-
-    # 3. get all the categories (saved in categories.csv)
     #get_all_categories(main_categories)
 
-    # 4. get the lowest ranking categories  (lowest_rank_categories.csv)
+    # 3. get the lowest ranking sub categories  (lowest_rank_categories.csv)
     #import_csv_to_sql(path = './categories.csv')
-    #do_some_sql_query(save_csv= True, path = './lowest_rank_categories.csv')
+    #do_some_sql_query(save_csv= True, path = './lowest_rank_categories.csv') #see query in README
 
-    # 4. choose a random sub-category to scrape
-    #import_csv_into_class(path = './lowest_rank_categories.csv', cat_id = 12)
-    #get_product(main_categories[2], no_page = 1 , save_db= True)
+    # 4. choose a random sub-category to scrape and specify a number of pages to roll over
+    cat = import_csv_into_class(path = './lowest_rank_categories.csv', cat_id = 3121)
+    get_product(cat, no_page = 5 , save_db= True)
 
-    # 5. do some query
+    # 5. do some query on the product tiki and save it csv
+    do_some_sql_query(save_csv= True, path = './example_query.csv')
     
-
     # 6. drop table after reading data
-    #drop_categories_table()
+    drop_categories_table()
     drop_tiki_table()
 
     #close sql server
